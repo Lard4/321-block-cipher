@@ -8,11 +8,7 @@ from Crypto.Util.Padding import pad
 from PIL import Image
 import imghdr
 
-
-def main():
-    # open image
-    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-     
+def bmp_to_bytes(img):
     # convert to byte stream
     img_bytes = io.BytesIO()
     img.save(img_bytes, format="BMP")
@@ -22,7 +18,17 @@ def main():
     img_hdr = img_bytes[0:54]
     img_bytes = img_bytes[54:]
 
-    key = makeKey()
+    return img_hdr, img_bytes
+
+
+def custom_ecb():
+    # open image
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    
+    # convert to byte stream
+    img_hdr, img_bytes = bmp_to_bytes(img)
+
+    key = make_key()
     print("key:", key.hex())
 
     cipher = AES.new(key, AES.MODE_ECB)
@@ -46,20 +52,14 @@ def main():
     # https://pycryptodome.readthedocs.io/en/latest/src/cipher/aes.html
 
 
-def correct_output():
+def correct_ecb():
     # open image
     img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
 
     # convert to byte stream
-    img_bytes = io.BytesIO()
-    img.save(img_bytes, format="BMP")
-    img_bytes = img_bytes.getvalue()
+    img_hdr, img_bytes = bmp_to_bytes(img)
 
-    # save header and skip over it
-    img_hdr = img_bytes[0:54]
-    img_bytes = img_bytes[54:]
-
-    key = makeKey()
+    key = make_key()
     print("key:", key.hex())
 
     cipher = AES.new(key, AES.MODE_ECB)
@@ -71,7 +71,7 @@ def correct_output():
     f.close()
 
 
-def makeKey():
+def make_key():
     # returns 16 random bytes
     # https://docs.python.org/3/library/secrets.html#module-secrets
     
@@ -82,5 +82,5 @@ def makeKey():
 
 
 if __name__ == '__main__':
-    main()
-    correct_output()
+    custom_ecb()
+    correct_ecb()
