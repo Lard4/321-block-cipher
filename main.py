@@ -6,13 +6,21 @@ import numpy as np
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from PIL import Image
+import imghdr
 
 
 def main():
+    # open image
     img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+     
+    # convert to byte stream
     img_bytes = io.BytesIO()
     img.save(img_bytes, format="BMP")
     img_bytes = img_bytes.getvalue()
+
+    # save header and skip over it
+    img_hdr = img_bytes[0:54]
+    img_bytes = img_bytes[54:]
 
     key = makeKey()
     print("key:", key.hex())
@@ -28,7 +36,8 @@ def main():
         ciphertext_bytes += cipher.encrypt(
             pad(img_bytes[len(img_bytes)//16+1 : ], 16))
 
-    f = open("ECB.txt", "wb")
+    f = open("ECB_custom.bmp", "wb")
+    f.write(img_hdr)
     f.write(ciphertext_bytes)
     f.close()
 
@@ -38,10 +47,17 @@ def main():
 
 
 def correct_output():
+    # open image
     img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+
+    # convert to byte stream
     img_bytes = io.BytesIO()
     img.save(img_bytes, format="BMP")
     img_bytes = img_bytes.getvalue()
+
+    # save header and skip over it
+    img_hdr = img_bytes[0:54]
+    img_bytes = img_bytes[54:]
 
     key = makeKey()
     print("key:", key.hex())
@@ -49,7 +65,8 @@ def correct_output():
     cipher = AES.new(key, AES.MODE_ECB)
     ciphertext_bytes = cipher.encrypt(pad(img_bytes, 16))
 
-    f = open("ECB_correct.txt", "wb")
+    f = open("ECB_correct.bmp", "wb")
+    f.write(img_hdr)
     f.write(ciphertext_bytes)
     f.close()
 
