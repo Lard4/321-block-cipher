@@ -1,12 +1,9 @@
-import sys
-import os
 import io
 import secrets
-import numpy as np
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from PIL import Image
-import imghdr
+
 
 def bmp_to_bytes(img):
     # convert to byte stream
