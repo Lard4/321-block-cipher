@@ -69,6 +69,7 @@ def testTaskI():
     """ ECB encryption"""
     # open image
     img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -86,6 +87,7 @@ def testTaskI():
     """ CBC encryption"""
     # open image
     img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -205,13 +207,42 @@ def correct_cbc_encrypt(data, key):
     return ciphertext_bytes
 
 
+# takes in a maximum block size of 16 bytes (wrong with 17+)
+def pkcs7(block):
+    padBytes = 16 - len(block)
+
+    if padBytes == 0:
+        padBytes = 16
+
+    for i in range(padBytes):
+        block += bytes([padBytes])
+
+    return block
+
+
+def testPadding():
+    temp = b'\xf8\x01\x04\x05\x00\x01\x00\x00\x00\x02\x01\x04\x05\x00\x01\x00'
+
+    print(blue, temp, end)
+    block1 = pad(temp, 16)
+    block2 = pkcs7(temp)
+    if block1 != block2:
+        print(red, "error:", end)
+        print(block1)
+        print(block2)
+    else:
+        print("both blocks are:\n", end="")
+        print(green, block1, end)
+
+
 if __name__ == '__main__':
     global_key = make_key()
     global_iv = make_iv()
 
     # testTaskI()
     # testTaskII()
+    testPadding()
 
-    ciph = custom_cbc_encrypt(bytes("hello cameron this is funny because camaron in spanish is shrimp lolololololol", encoding="utf-8"), global_key, global_iv)
+    """ ciph = custom_cbc_encrypt(bytes("hello cameron this is funny because camaron in spanish is shrimp lolololololol", encoding="utf-8"), global_key, global_iv)
     plain = custom_cbc_decrypt(ciph, global_key, global_iv)
-    print(plain)
+    print(plain) """
