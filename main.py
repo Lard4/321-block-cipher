@@ -56,7 +56,7 @@ def submit(input_val):
 
 
 def verify(input_val):
-    d = cbc_decrypt(input_val)
+    d = custom_cbc_decrypt(input_val)
     if (d.find(";admin=true;") == -1):
         return False
     else:
@@ -201,7 +201,7 @@ def correct_ecb_encrypt(data, key):
 
 def correct_cbc_encrypt(data, key):
     cipher = AES.new(key, AES.MODE_CBC)
-    ciphertext_bytes = cipher.encrypt(pad(img_bytes, 16))
+    ciphertext_bytes = cipher.encrypt(pad(data, 16))
     return ciphertext_bytes
 
 
