@@ -3,6 +3,7 @@ import secrets
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from PIL import Image
+import binascii
 
 
 red = "\x1B[31m"
@@ -26,18 +27,14 @@ def bmp_to_bytes(img):
     return img_hdr, img_bytes
 
 
-def xor_iv_with_input(key, iv, img_bytes, start, end):
-    for index, byte in enumerate(img_bytes[start:end]):
-        res = byte ^ iv[index]
-        img_bytes[index] = res
-
-    return img_bytes[start:end]
+def xor_byte_arrays(one, two):
+    return bytes(a ^ b for (a, b) in zip(one, two))
 
 
 def custom_cbc():
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    #img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -52,7 +49,8 @@ def custom_cbc():
     print("IV:", iv.hex())
 
     cipher = AES.new(key, AES.MODE_ECB)
-    img_bytes[0:16] = xor_iv_with_input(key, iv, img_bytes, 0, 16)
+    img_bytes[0:16] = xor_byte_arrays(key, iv)
+    print(binascii.hexlify(img_bytes[0:16]))
     encrypted_block = cipher.encrypt(img_bytes[0:16])
     ciphertext_bytes = encrypted_block
 
@@ -75,8 +73,8 @@ def custom_cbc():
 
 def custom_ecb():
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    #img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
     
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -103,8 +101,8 @@ def custom_ecb():
 
 def correct_ecb():
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    #img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -123,8 +121,8 @@ def correct_ecb():
 
 def correct_cbc():
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/blockciphers/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
