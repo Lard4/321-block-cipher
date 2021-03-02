@@ -48,7 +48,7 @@ def submit(input_val):
     input_val = bytes(input_val, encoding="utf-8")
 
     # pad the string
-    input_val = pad(input_val, 16)
+    input_val = pkcs7(input_val, 16)
 
     # encrypt using CBC and return
     encrypted_ciphertext = custom_cbc_encrypt(input_val, global_key, global_iv)
@@ -56,7 +56,9 @@ def submit(input_val):
 
 
 def verify(input_val):
-    d = custom_cbc_decrypt(input_val)
+    global global_key, global_iv
+
+    d = custom_cbc_decrypt(input_val, global_key, global_iv)
     if (d.find(";admin=true;") == -1):
         return False
     else:
@@ -66,10 +68,12 @@ def verify(input_val):
 def testTaskI():
     global global_key, global_iv
 
+    print("Task I:")
+
     """ ECB encryption"""
     # open image
-    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
+    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -83,17 +87,26 @@ def testTaskI():
     f.write(img_hdr)
     f.write(ciphertext_bytes)
     f.close()
+
+    correct_ecb = correct_ecb_encrypt(img_bytes, global_key)
+    f = open("ECB_correct.bmp", "wb")
+    f.write(img_hdr)
+    f.write(correct_ecb)
+    f.close()
+
+    print(green, "diff ECB_correct.bmp ECB_custom.bmp", end="")
+    print(end, "will not differ\n")
     
     """ CBC encryption"""
     # open image
-    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
+    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
 
     print(blue, "CBC key:", global_key.hex(), end)
-    print(purple, "CBC IV:", global_iv.hex(), end)
+    print(blue, "CBC IV:", global_iv.hex(), end)
 
     # encrypt
     ciphertext_bytes = custom_cbc_encrypt(img_bytes, global_key, global_iv)
@@ -103,10 +116,28 @@ def testTaskI():
     f.write(ciphertext_bytes)
     f.close()
 
+    correct_cbc = correct_cbc_encrypt(img_bytes, global_key)
+    f = open("CBC_correct.bmp", "wb")
+    f.write(img_hdr)
+    f.write(correct_cbc)
+    f.close()
+
+    print(purple, "diff CBC_correct.bmp CBC_custom.bmp", end="")
+    print(end, "will likely differ because the IV is random for CBC_correct.bmp\n")
+
 
 def testTaskII():
-    submit("You're the man now, dog")
-    submit("You're the man now; =, ; = dog")
+    print("Task II:")
+
+    cipher = submit("You're the man now; =, ; = dog")
+    print(red, "ciphertext:", cipher, end)
+
+    # result = verify(cipher)
+    # print("verify() returned", result)
+
+    ciph = custom_cbc_encrypt(bytes("hello cameron this is funny because camaron in spanish is shrimp lolololololol", encoding="utf-8"), global_key, global_iv)
+    plain = custom_cbc_decrypt(ciph, global_key, global_iv)
+    print(plain)
     
 
 def bmp_to_bytes(img):
@@ -144,7 +175,7 @@ def custom_cbc_encrypt(data, key, iv):
         previous_block = encrypted
 
     if len(data) % 16 != 0:
-        block = pad(data[num_iters:], 16)
+        block = pkcs7(data[num_iters:], 16)
         xord_block = xor_byte_arrays(previous_block, block)
         encrypted = cipher.encrypt(xord_block)
         ciphertext_bytes += encrypted
@@ -190,7 +221,7 @@ def custom_ecb_encrypt(data, key):
         ciphertext_bytes += cipher.encrypt(block)
 
     if len(data) % 16 != 0:
-        ciphertext_bytes += cipher.encrypt(pad(data[num_iters:], 16))
+        ciphertext_bytes += cipher.encrypt(pkcs7(data[num_iters:], 16))
 
     return ciphertext_bytes
 
@@ -207,12 +238,11 @@ def correct_cbc_encrypt(data, key):
     return ciphertext_bytes
 
 
-# takes in a maximum block size of 16 bytes (wrong with 17+)
-def pkcs7(block):
-    padBytes = 16 - len(block)
+def pkcs7(block, blocksize):
+    padBytes = blocksize - len(block)
 
     if padBytes == 0:
-        padBytes = 16
+        padBytes = blocksize
 
     for i in range(padBytes):
         block += bytes([padBytes])
@@ -220,29 +250,9 @@ def pkcs7(block):
     return block
 
 
-def testPadding():
-    temp = b'\xf8\x01\x04\x05\x00\x01\x00\x00\x00\x02\x01\x04\x05\x00\x01\x00'
-
-    print(blue, temp, end)
-    block1 = pad(temp, 16)
-    block2 = pkcs7(temp)
-    if block1 != block2:
-        print(red, "error:", end)
-        print(block1)
-        print(block2)
-    else:
-        print("both blocks are:\n", end="")
-        print(green, block1, end)
-
-
 if __name__ == '__main__':
     global_key = make_key()
     global_iv = make_iv()
 
-    # testTaskI()
-    # testTaskII()
-    testPadding()
-
-    """ ciph = custom_cbc_encrypt(bytes("hello cameron this is funny because camaron in spanish is shrimp lolololololol", encoding="utf-8"), global_key, global_iv)
-    plain = custom_cbc_decrypt(ciph, global_key, global_iv)
-    print(plain) """
+    testTaskI()
+    testTaskII()
