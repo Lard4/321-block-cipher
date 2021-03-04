@@ -170,12 +170,8 @@ def verify(input_val):
     global global_key, global_iv
 
     d = custom_cbc_decrypt(input_val, global_key, global_iv)
-    d = d.decode("utf-8")
-
-    if (d.find(";admin=true;") == -1):
-        return False
-    else:
-        return True
+    print(d)
+    return b";admin=true;" in d
 
 
 def testTaskI():
@@ -186,8 +182,8 @@ def testTaskI():
 
     """ ECB encryption"""
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    #img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -213,8 +209,8 @@ def testTaskI():
     
     """ CBC encryption"""
     # open image
-    # img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
-    img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
+    img = Image.open('/Users/krdixson/Desktop/321/BlockCipher/cp-logo.bmp')
+    # img = Image.open('/Users/cameronpriest/Desktop/Winter Quarter/CPE 321/Assignments/321-block-cipher/cp-logo.bmp')
 
     # convert to byte stream
     img_hdr, img_bytes = bmp_to_bytes(img)
@@ -241,6 +237,7 @@ def testTaskI():
 
 
 def testTaskII():
+    '''
     print(blue, end="")
     print("Task II:", end)
 
@@ -259,7 +256,25 @@ def testTaskII():
     ciph = custom_cbc_encrypt(bytes("hello cameron this is funny because camaron in spanish is shrimp lolololololol", encoding="utf-8"), global_key, global_iv)
     plain = custom_cbc_decrypt(ciph, global_key, global_iv)
     print(plain)
+    '''
 
+    encrypted_bytes = submit("12345678901234567890AAAAAAAAAAAAKadminKtrue")
+
+    barr = bytearray(encrypted_bytes)
+    semi_dist = ord("K") ^ ord(";")
+    eqauls_dist = ord("K") ^ ord("=")
+
+    print(bytes(barr).hex(':'))
+
+    barr[16] = barr[16] ^ semi_dist
+    barr[22] = barr[22] ^ eqauls_dist
+
+    encryped_bytes = bytes(barr)
+
+    print(encryped_bytes.hex(':'))
+
+    val = verify(encrypted_bytes)
+    print(val)
 
 if __name__ == '__main__':
     global_key = make_key()
